@@ -146,6 +146,26 @@ Yordamlar yazma işlemidir; **kaynakta** (`mysql-primary`) çağrılır.
 
 Uygulama henüz yoksa ya da çökmüşse Apache `frontend/hata/503.html` sayfasını gösterir.
 
+## Aşama 2 — Uygulama
+
+**Seçilen yol: Web API + arayüz.** Flask uygulaması JSON API sağlar. HTML5, CSS3 ve JavaScript arayüzü `frontend/` klasöründedir; JavaScript veriyi `fetch` ile alır. React kullanılmamıştır. Apache, `/api/` isteklerini Flask uygulamasına; diğer istekleri frontend dosyalarına yönlendirir.
+
+### Veri erişimi ve istek yolu
+
+Yazma işlemleri `mysql-primary` kaynak sunucusuna; menü, rezervasyon ve yönetici özeti gibi listeleme ve rapor sorguları `mysql-replica` sunucusuna gönderilir. Veritabanı erişimi `uygulama/veritabani.py` katmanında tutulur.
+
+Örnek rezervasyon isteğinin yolu:
+
+`POST /api/rezervasyon` → `app.py` içindeki `rezervasyon()` route/controller işlevi → `veritabani.py` içindeki `rezervasyon_yap()` → kaynak MySQL’de `sp_rezervasyon_yap` → JSON yanıtı → arayüzde sonuç ve bakiye gösterimi.
+
+Rezervasyonun hemen ardından ekranda gösterilen bakiye, kaynak sunucuda çalışan rezervasyon yordamının yanıtından alınır. Replika eşzamansız güncellendiğinden yeni yazma işlemi replika tarafına kısa bir gecikmeyle ulaşabilir. Bakiye hemen replikadan okunsaydı eski değer görülebilirdi. Bu nedenle işlem sonrası bakiye kaynak sunucunun yanıtından gösterilir; sonraki listeleme ve rapor okumaları replikadan yapılır.
+
+### Arayüz
+
+Arayüzde giriş/çıkış, günün menüsü, haftalık menü ve rezervasyon, rezervasyonlarım ve iptal, bakiye/hareketler/yükleme, değerlendirme ve yönetici menü yönetimi ekranları bulunur.
+
+Arayüz telefon genişliğinde, yaklaşık 400 px görünümde kullanılabilir olmalıdır. Mobil görünüm kontrolünde içerik ve formlar ekrana sığmalı, yatay sayfa kaydırması gerekmemelidir.
+
 ## Doğrulama komutları (Aşama 1)
 
 ```bash
