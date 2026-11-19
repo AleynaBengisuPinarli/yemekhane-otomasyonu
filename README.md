@@ -241,11 +241,11 @@ ve rezervasyon isteği porsiyon bilgisini API’ye iletir.
 
 **Akşam menüsünde yarım porsiyon seçimi ve fiyat:**
 
-![Akşam menüsünde yarım porsiyon seçimi](aksam-yarim-porsiyon.jpeg)
+![Akşam menüsünde yarım porsiyon seçimi](docs/gorseller/aksam-yarim-porsiyon.jpeg)
 
 **Öğle menüsünde yarım porsiyon seçimi ve fiyat:**
 
-![Öğle menüsünde yarım porsiyon seçimi](ogle-yarim-porsiyon.jpeg)
+![Öğle menüsünde yarım porsiyon seçimi](docs/gorseller/ogle-yarim-porsiyon.jpeg)
 
 ### Alerjen tercihleri
 
@@ -256,11 +256,11 @@ tercihleriyle karşılaştırılır; eşleşme olduğunda yemek yanında uyarı 
 
 **Profilde alerjen seçimi ve tercihlerin kaydedilmesi:**
 
-![Alerjen tercihleri](alerjen-tercihleri.jpeg)
+![Alerjen tercihleri](docs/gorseller/alerjen-tercihleri.jpeg)
 
 **Seçilen alerjeni içeren yemek için menü uyarısı:**
 
-![Haftalık menüde alerjen uyarısı](haftalik-menu-alerjen-uyarisi.jpeg)
+![Haftalık menüde alerjen uyarısı](docs/gorseller/haftalik-menu-alerjen-uyarisi.jpeg)
 
 ### Migration ve replikasyon
 
