@@ -195,6 +195,24 @@ docker compose exec redis redis-cli ping
 Windows PowerShell'de de aynı komutlar çalışır. Komut çıktılarını rapora eklerken parolayı
 komut satırına yazdığınız için çıkan uyarı satırını önemsemeyin.
 
+## Aşama 3 — Redis
+
+Redis, uygulamada menü verilerini önbelleğe almak ve kullanıcı oturumlarını saklamak için kullanılır. Redis bağlantısı Flask uygulamasında `REDIS_HOST` ve `REDIS_PORT` ortam değişkenleriyle kurulur.
+
+### Menü önbelleği
+
+Menü verileri `menu:{yemekhane_id}:{tarih}:{ogun_id}` biçimindeki anahtarlarla Redis’te tutulur. Örneğin `menu:1:2026-11-18:1` anahtarı, 1 numaralı yemekhanenin 18 Kasım tarihli 1 numaralı öğün menüsünü temsil eder. Anahtarların TTL süresi ilgili menünün gün sonuna göre hesaplanır; böylece süresi geçmiş bir günlük menü sonraki güne taşınmaz. Günlük ve haftalık liste isteklerinde kullanılan indeks anahtarları da ilgili günün sonunda sona erer.
+
+Menü isteği geldiğinde uygulama önce Redis’te ilgili indeks ve menü anahtarlarını arar. Cache bulunamazsa (`MISS`) menü verileri veritabanından okunur, menülere göre gruplanır ve Redis’e kaydedilir. Aynı menü tekrar istendiğinde (`HIT`) kayıt Redis’ten döndürülür. Uygulama günlüğünde yapılan kontrolde ilk isteğin `MISS`, sonraki isteğin `HIT` verdiği görüldü.
+
+Yönetici menü eklediğinde veya güncellediğinde `menu:*` anahtarları temizlenir. Ardından arayüz haftalık menüleri yeniden istediğinde uygulama veritabanından güncel listeyi alır ve cache’i yeniden oluşturur. Güncelleme sonrasında günlükte tekrar `MISS` görülmesi ve menü anahtarlarının yeniden oluşması bu davranışı doğruladı. Redis CLI kontrolünde `menu:1:2026-11-18:1` anahtarının TTL değeri 18.798 saniye olarak görüldü; bu değer kontrol anında gün sonuna kalan süreyle uyumluydu.
+
+### Kullanıcı oturumu
+
+Başarılı girişte uygulama bir oturum token’ı üretir ve kullanıcı bilgilerini `oturum:{token}` anahtarıyla Redis’e kaydeder. Oturumun başlangıç TTL süresi 30 dakikadır (1.800 saniye). Kullanıcı geçerli token ile istek yaptıkça süre tekrar 30 dakikaya uzatılır. Bu sayede aktif kullanıcının oturumu kullanım sırasında sona ermez.
+
+Kullanıcı çıkış yaptığında token’a ait `oturum:{token}` anahtarı Redis’ten silinir. Oturumun Redis’te tutulması, Flask uygulama container’ının yeniden başlatılmasından etkilenmez. Uygulama yeniden başlatıldıktan sonra tarayıcı yenilendiğinde kullanıcının oturumunun korunduğu ve yeniden giriş ekranının açılmadığı doğrulandı.
+
 ## Migration (Aşama 4)
 
 `04_degisiklik.sql` dosyasını `db/init/` klasörüne koyun. Böylece depoyu sıfırdan kuran biri
