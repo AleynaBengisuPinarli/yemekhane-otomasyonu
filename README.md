@@ -224,6 +224,57 @@ docker compose exec -T mysql-primary mysql -uroot -pyemekhane_kok yemekhane < db
 
 Replikaya ayrıca uygulamayın; değişiklik replikasyonla geçer. `03` numarası boş bırakılmıştır.
 
+## Aşama 4 — Değişiklik talebi
+
+### Yarım porsiyon
+
+`db/init/04_degisiklik.sql` migration dosyası `rezervasyonlar` tablosuna
+`yarim_porsiyon` sütununu ekler. Varsayılan değer `0` olduğundan mevcut ve geçmiş
+rezervasyonlar tam porsiyon olarak korunur. Güncellenen `sp_rezervasyon_yap`
+yordamı porsiyon bilgisini alır; öğle ve akşam menülerinde yarım porsiyon ücretini
+tam fiyatın %60’ı olarak hesaplar. Kahvaltıda yarım porsiyon isteği veritabanı
+yordamı tarafından reddedilir.
+
+Arayüzde öğle ve akşam menüleri için tam veya yarım porsiyon seçilebilir.
+Kahvaltıda yarım porsiyon seçeneği kapalıdır. Seçime göre fiyat ekranda güncellenir
+ve rezervasyon isteği porsiyon bilgisini API’ye iletir.
+
+**Akşam menüsünde yarım porsiyon seçimi ve fiyat:**
+
+![Akşam menüsünde yarım porsiyon seçimi](aksam-yarim-porsiyon.jpeg)
+
+**Öğle menüsünde yarım porsiyon seçimi ve fiyat:**
+
+![Öğle menüsünde yarım porsiyon seçimi](ogle-yarim-porsiyon.jpeg)
+
+### Alerjen tercihleri
+
+Kullanıcı tercihleri `kullanici_alerjenleri` tablosunda kullanıcı ve alerjen
+numarasıyla saklanır. Profil ekranı alerjen listesini API’den alır ve kullanıcının
+seçimlerini kaydeder. Menüdeki yemeklerin alerjen numaraları kullanıcı
+tercihleriyle karşılaştırılır; eşleşme olduğunda yemek yanında uyarı gösterilir.
+
+**Profilde alerjen seçimi ve tercihlerin kaydedilmesi:**
+
+![Alerjen tercihleri](alerjen-tercihleri.jpeg)
+
+**Seçilen alerjeni içeren yemek için menü uyarısı:**
+
+![Haftalık menüde alerjen uyarısı](haftalik-menu-alerjen-uyarisi.jpeg)
+
+### Migration ve replikasyon
+
+Migration kaynak MySQL üzerinde çalıştırıldı. Replica üzerinde alınan
+`SHOW CREATE TABLE` çıktısında `rezervasyonlar.yarim_porsiyon` sütunu ve
+`kullanici_alerjenleri` tablosu doğrulandı. Böylece şema değişikliğinin replica
+sunucuya da ulaştığı görüldü.
+
+### Redis menü önbelleği
+
+Migration sonrasında eski `menu:*` Redis anahtarları temizlendi.
+`redis-cli --scan --pattern "menu:*"` komutunun boş çıktı vermesi temizliği
+doğruladı. Sonraki menü isteğinde uygulama menü önbelleğini yeniden oluşturur.
+
 ## Sıfırlama
 
 ```bash
